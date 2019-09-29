@@ -1,0 +1,209 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package radio1;
+import java.util.Scanner;
+import java.io.*;
+import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.NoSuchFileException;
+import java.io.IOException;
+
+/**
+ *
+ * @author cim111
+ */
+
+public class Radio 
+{
+    private final String dataFile = "data.txt";
+    private final Path data = Paths.get("data.txt");
+    //private final Path amFavesFile = Paths.get("amFaves.txt");
+    //private final Path fmFavesFile = Paths.get("fmFaves.txt");
+    //private final Path lastStations = Paths.get("lastStations.txt");
+    private int[] amFaves = new int[6];
+    private double[] fmFaves = new double[6];
+    private String lastFreq;
+    private int currentAm;
+    private double currentFm;
+    
+    //declare rScanner variables
+    private final int amMIN = 510;
+    private final double fmMIN = 87.9;
+    private RadioScanner rScanner;
+    
+    private Frequency frequency;
+    
+    //decalre booleans
+    //boolean isAM;
+    //boolean isOn;
+    
+    
+    public Radio(){
+        rScanner = new RadioScanner();
+        
+    }
+    public void saveData() throws IOException{
+        BufferedWriter writer = new BufferedWriter(new FileWriter(dataFile));
+        
+        writer.write(currentAm + "\n" + currentFm + "\n");
+        for(int faves : amFaves){
+            writer.write(faves + "\n");
+        }
+        for(double faves : fmFaves){
+            writer.write(faves + "\n");
+        }
+        writer.write(rScanner.getFreq().toString());
+        writer.close();
+        
+    }
+    
+    
+    public String powerOn()throws IOException{
+        String startStation;
+        try{
+            Scanner scan = new Scanner(data);
+            currentAm = scan.nextInt();
+            currentFm = scan.nextDouble();
+            for(int i=0; i < amFaves.length; i++){
+                amFaves[i] = scan.nextInt();
+            }
+            for (int i=0; i < fmFaves.length; i++){
+                fmFaves[i] = scan.nextDouble();
+            }
+            lastFreq = scan.next();
+            if(lastFreq == "AM"){
+                startStation = Integer.toString(currentAm);
+            }else{
+                startStation = Double.toString(currentFm);
+            }
+            
+        }catch (NoSuchFileException e){
+            loadDefaults();
+            startStation = Integer.toString(currentAm);
+        }
+        return startStation;
+    }
+    public void loadDefaults() throws IOException{
+        frequency = Frequency.AM;
+        currentAm = amMIN;
+        currentFm = fmMIN;
+        for (int i = 0; i < amFaves.length; i++){
+            amFaves[i] = amMIN;
+        }
+        for (int i = 0; i < amFaves.length; i++){
+            fmFaves[i] = fmMIN;
+        }
+        saveData();
+    }
+    
+    
+    public void setFave(int i){
+        if (rScanner.getFreq() == Frequency.AM){
+            amFaves[i] = currentAm;
+        }else{
+            fmFaves[i] = currentFm;
+        }
+    }
+    
+    public void powerOff(){
+        
+        
+    }
+    
+    public String tuneUp(){
+        String newStation = "";
+        if(frequency == Frequency.AM){
+            currentAm = rScanner.tuneUp(currentAm);
+            newStation = Integer.toString(currentAm);
+        }else{
+            currentFm = rScanner.tuneUp(currentFm);
+            newStation = Double.toString(currentFm);
+        }
+        return newStation;
+    }
+    public String tuneDown(){
+        String newStation;
+         if(frequency == Frequency.AM){
+            currentAm = rScanner.tuneDown(currentAm);
+            newStation = Integer.toString(currentAm);
+        }else{
+            currentFm = rScanner.tuneDown(currentFm);
+            newStation = Double.toString(currentFm);
+        }
+        return newStation;
+    }
+    
+    public String seekUp(){
+        String newStation;
+        if(frequency == Frequency.AM){
+            currentAm = rScanner.seekUp(currentAm);
+            newStation = Integer.toString(currentAm);
+        }else{
+            currentFm = rScanner.seekUp(currentFm);
+            newStation = Double.toString(currentFm);
+        }
+        return newStation;
+    }
+    
+    public String seekDown(){
+        String newStation = "";
+        if(frequency == Frequency.AM){
+            currentAm = rScanner.seekDown(currentAm);
+            newStation = Integer.toString(currentAm);
+        }else{
+            currentFm = rScanner.seekDown(currentFm);
+            newStation = Double.toString(currentFm);
+        }
+        return newStation;
+ 
+    }
+    
+    public void setFavorite(int i){
+        if(frequency == Frequency.AM){
+            amFaves[i] = currentAm;
+        }else{
+            fmFaves[i] = currentFm;
+        }
+    }
+    public String getFavorite(int i){
+        String newStation = "";
+        if(frequency == Frequency.AM){
+            currentAm = amFaves[i];
+            newStation = Integer.toString(currentAm);
+        }else{
+            currentFm = fmFaves[i];
+            newStation = Double.toString(currentFm);
+        }
+        return newStation;
+    }
+    public String swapRadio()
+    {
+        String newStation = "";
+        if(frequency == Frequency.AM){
+            frequency = Frequency.FM;
+            newStation = Double.toString(currentFm);
+        }else{
+            frequency = Frequency.AM;
+            newStation = Integer.toString(currentAm);
+        }
+        return newStation;
+    }
+    
+    public String getCurrent(){
+        String current;
+        if(frequency == Frequency.AM){
+            current = Integer.toString(currentAm);
+        }else{
+            current = Double.toString(currentFm);
+        }
+        return current;
+    }
+    
+    
+    
+}
